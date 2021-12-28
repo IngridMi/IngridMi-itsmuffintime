@@ -1,64 +1,86 @@
-# GitHub Docs <!-- omit in toc --> 
+# Ethereum transactions demo
 
-This repository contains the documentation website code and Markdown source files for [docs.github.com](https://docs.github.com).
+You'll find here a collection of scripts that show you how to interact with Ethereum using the two most popular Javascript libraries: [web3.js](https://github.com/ethereum/web3.js/) and [ethers.js](https://github.com/ethers-io/ethers.js/).
 
-GitHub's Docs team works on pre-production content in a private repo that regularly syncs with this public repo.
+## Prerequisites
 
-Use the table of contents icon <img src="./assets/images/table-of-contents.png" width="25" height="25" /> on the top left corner of this document to get to a specific section of this guide quickly.
+Make sure to have [Node.js](https://nodejs.org/en/) 12+ installed and an [Infura](https://infura.io) Project ID available. Clone this repository and run:
 
-## Contributing
+```bash
+cd demo-eth-tx/
+npm install
+```
 
-See [the contributing guide](CONTRIBUTING.md) for detailed instructions on how to get started with our project. 
+We have already supplied a default configuration in `.env` that includes an Infura ID, a private signing key (Buidler), a demo contract and a default network (rinkeby). Be kind and don't drain the wallets so other people can use them as well to test their apps. 😊
 
-We accept different [types of contributions](https://github.com/github/docs/blob/main/contributing/types-of-contributions.md), including some that don't require you to write a single line of code.
+## Send a simple transaction
 
-On the GitHub Docs site, you can click the make a contribution button to open a PR(Pull Request) for quick fixes like typos, updates, or link fixes.
+Let's first test how we can send a small amount of Ether between two accounts.
 
-<img src="./assets/images/contribution_cta.png" width="400">
+You can find a script for doing this using the `ethers.js` library in the `ethers/send.js` file. Run it and wait for the transaction to be mined:
 
-For more complex contributions, you can open an issue using the most appropriate [issue template](https://github.com/github/docs/issues/new/choose) to describe the changes you'd like to see. By this way you can also be a part of Open source contributor's community without even writing a single line of code.
+```bash
+node ethers/send.js
+```
 
-If you're looking for a way to contribute, you can scan through our [existing issues](https://github.com/github/docs/issues) for something to work on. When ready, check out [Getting Started with Contributing](/CONTRIBUTING.md) for detailed instructions.
+The same script, using the `web3.js` library is located at `web3/send.js`. Run it with:
 
-### Join us in discussions
+```bash
+node web3/send.js
+```
 
-We use GitHub Discussions to talk about all sorts of topics related to documentation and this site. For example: if you'd like help troubleshooting a PR, have a great new idea, or want to share something amazing you've learned in our docs, join us in the [discussions](https://github.com/github/docs/discussions).
+## Working with smart contracts
 
-### And that's it!
+In this section we'll look into the steps required to write, deploy and interact with a smart contract.
 
-If you're having trouble with your GitHub account, contact [Support](https://support.github.com/contact).
+Let's start with a simple contract (`Demo.sol`):
 
-That's how you can easily become a member of the GitHub Documentation community. :sparkles:
+```solidity
+contract Demo {
+    event Echo(string message);
 
-## READMEs
+    function echo(string calldata message) external {
+        emit Echo(message);
+    }
+}
+```
 
-In addition to the README you're reading right now, this repo includes other READMEs that describe the purpose of each subdirectory in more detail:
-You can go through among them for specified details regarding the topics listed below.
+This contract has a single method (called `echo`) that can be called by anyone with a `message` and emits an event that echoes the input `message`.
 
-- [content/README.md](content/README.md)
-- [content/graphql/README.md](content/graphql/README.md)
-- [content/rest/README.md](content/rest/README.md)
-- [contributing/README.md](contributing/README.md)
-- [data/README.md](data/README.md)
-- [data/reusables/README.md](data/reusables/README.md)
-- [data/variables/README.md](data/variables/README.md)
-- [includes/liquid-tags/README.md](includes/liquid-tags/README.md)
-- [includes/README.md](includes/README.md)
-- [components/README.md](components/README.md)
-- [lib/liquid-tags/README.md](lib/liquid-tags/README.md)
-- [middleware/README.md](middleware/README.md)
-- [script/README.md](script/README.md)
-- [stylesheets/README.md](stylesheets/README.md)
-- [tests/README.md](tests/README.md)
+### Contract compilation
 
-## License
+Before deploying the contract on the network, we need to compile it. There's a simple `compile.js` script included here to serve this purpose for now:
 
-The GitHub product documentation in the assets, content, and data folders are licensed under a [CC-BY license](LICENSE).
+```bash
+node compile.js
+```
 
-All other code in this repository is licensed under the [MIT license](LICENSE-CODE).
+> **Note:** When you start building your own smart contracts, you should probably use a development suite such as [Truffle](https://github.com/trufflesuite/truffle) or [Buidler](https://github.com/nomiclabs/buidler) - these tools will make your life easier 👍
 
-When you are using the GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
+As soon as the contract is compiled, a `Demo.json` file will show up in the main directory. This file includes the contract bytecode (required for deployment) and the Application Binary Interface (ABI) required for contract interactions.
 
-## Thanks :purple_heart:
+### Contract deployment
 
-Thanks for all your contributions and efforts towards improving the GitHub documentation. We thank you being part of our :sparkles: community :sparkles: !
+You can find the deployment scripts in `ethers/deploy.js` and `web3/deploy.js`. Run any of these to deploy your contract:
+
+```bash
+node ethers/deploy.js
+# or
+node web3/deploy.js
+```
+
+As soon as the deployment transaction is mined, the script will output the address of the new contract.
+
+### Contract interaction
+
+Now that the contract is deployed, you can interact with it. The scripts are configured to interact with an older, existing contract, but feel free to edit [this line](ethers/call.js#L23) of `ethers/call.js` or [this line](web3/call.js#L25) of `web3/call.js` and replace it with the address of your newly deployed contract.
+
+Now you can run:
+
+```bash
+node ethers/call.js
+# or
+node web3/call.js
+```
+
+Congratulations! You deployed and interacted with an Ethereum smart contract. It's time for you to go build something awesome! 🚀
